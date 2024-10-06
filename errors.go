@@ -21,25 +21,51 @@ const (
 
 type ErrorOption func(*ApiError)
 
-// ApiError represents a structured error for the API.
-type ApiError struct {
-	ErrorType     string `json:"error_type"`
-	Message       string `json:"message"`
-	ErrorCode     int    `json:"error_code"`
-	InternalError error  `json:"-"`
+type ApiErrors interface {
+	Error() string // This is the method required by the error interface in Go
+	Type() string
+	Code() int
+	MarshalJSON() ([]byte, error)
+	UnmarshalJSON(data []byte) error
 }
 
-// Error implements the error interface for ApiError.
+// ApiError represents a structured error for the API.
+type ApiError struct {
+	ErrorType  string `json:"error_type"`
+	Message    string `json:"message"`
+	ErrorCode  int    `json:"error_code"`
+	InnerError error  `json:"-"`
+}
+
+// make sure ApiError implements ApiErrors interface in compile time
+var _ ApiErrors = (*ApiError)(nil)
+
+// Type return ApiError Type.
+func (e *ApiError) Type() string {
+	return e.ErrorType
+}
+
+// Code return ApiError code.
+func (e *ApiError) Code() int {
+	return e.ErrorCode
+}
+
+// Error return ApiError message.
 func (e *ApiError) Error() string {
 	return e.Message
+}
+
+// InternalError return ApiError message.
+func (e *ApiError) InternalError() error {
+	return e.InnerError
 }
 
 // MarshalJSON customizes the JSON serialization for ApiError.
 func (e *ApiError) MarshalJSON() ([]byte, error) {
 	type Alias ApiError // Create an alias to avoid recursion
 	var internalErrorStr string
-	if e.InternalError != nil {
-		internalErrorStr = e.InternalError.Error()
+	if e.InnerError != nil {
+		internalErrorStr = e.InnerError.Error()
 	}
 
 	return json.Marshal(&struct {
@@ -66,7 +92,7 @@ func (e *ApiError) UnmarshalJSON(data []byte) error {
 	}
 
 	if aux.InternalError != nil {
-		e.InternalError = fmt.Errorf(*aux.InternalError)
+		e.InnerError = fmt.Errorf(*aux.InternalError)
 	}
 	return nil
 }
@@ -120,6 +146,6 @@ func RegisterErrorType(name string, errorCode int, message string) {
 // WithInternalError to wrap internal errors
 func WithInternalError(err error) ErrorOption {
 	return func(ae *ApiError) {
-		ae.InternalError = err
+		ae.InnerError = err
 	}
 }
