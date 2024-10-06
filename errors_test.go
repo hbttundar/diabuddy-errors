@@ -31,20 +31,20 @@ func TestNewApiError(t *testing.T) {
 	}
 }
 
-// TestWithInternalError checks if the internal error is correctly added
-func TestWithInternalError(t *testing.T) {
+// TestWithInnerError checks if the internal error is correctly added
+func TestWithInnerError(t *testing.T) {
 	// Arrange: Create an internal error and user-facing error
 	internalErr := fmt.Errorf("database connection failed")
 	userMessage := "User not found"
 	apiError := NewApiError(NotFoundErrorType, userMessage, WithInternalError(internalErr))
 
 	// Act: Verify internal error is attached
-	if apiError.InternalError == nil {
+	if apiError.InnerError == nil {
 		t.Error("expected internal error, got nil")
 	}
 
-	if apiError.InternalError.Error() != internalErr.Error() {
-		t.Errorf("expected internal error %s, got %s", internalErr.Error(), apiError.InternalError.Error())
+	if apiError.InnerError.Error() != internalErr.Error() {
+		t.Errorf("expected internal error %s, got %s", internalErr.Error(), apiError.InnerError.Error())
 	}
 }
 
@@ -65,7 +65,7 @@ func TestMarshalJSON(t *testing.T) {
 		t.Errorf("expected %s, got %s", expectedJSON, string(jsonData))
 	}
 }
-func TestMarshalJSONWithInternalError(t *testing.T) {
+func TestMarshalJSONWithInnerError(t *testing.T) {
 	// Arrange: Create an ApiError
 	apiError := NewApiError(NotFoundErrorType, "User not found", WithInternalError(errors.New("test internal error")))
 
@@ -108,7 +108,7 @@ func TestUnmarshalJSON(t *testing.T) {
 	}
 }
 
-func TestUnmarshalJSONWithInternalError(t *testing.T) {
+func TestUnmarshalJSONWithInnerError(t *testing.T) {
 	// Arrange: Create a JSON string
 	jsonStr := `{"internal_error":"test internal error","error_type":"NotFoundError","message":"User not found","error_code":404}`
 
@@ -132,8 +132,8 @@ func TestUnmarshalJSONWithInternalError(t *testing.T) {
 		t.Errorf("expected error code %d, got %d", http.StatusNotFound, apiError.ErrorCode)
 	}
 
-	if apiError.InternalError.Error() != "test internal error" {
-		t.Errorf("expected Internal error%s, got %s", "test internal error", apiError.InternalError.Error())
+	if apiError.InnerError.Error() != "test internal error" {
+		t.Errorf("expected Internal error%s, got %s", "test internal error", apiError.InnerError.Error())
 	}
 }
 
