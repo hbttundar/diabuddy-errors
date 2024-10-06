@@ -7,7 +7,7 @@ Diabuddy Errors package  provides a library which allows us to use same error fo
 ### Install
 With Go's module support, go [build|run|test] automatically fetches the necessary dependencies when you add the import in your code: 
 ```go
-    import "github.com/gin-gonic/gin"
+    import "github.com/hbttundar/diabuddy-errors"
 ```
 Alternatively, use go get:
 ```bash
