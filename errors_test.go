@@ -177,7 +177,18 @@ func TestRegisterErrorType(t *testing.T) {
 
 func TestApiError_Error(t *testing.T) {
 	apiError := NewApiError(NotFoundErrorType, "User not found")
-	if apiError.Error() != "User not found" {
-		t.Errorf("Expected error message '%s', but got '%s'", "User not found", apiError.Error())
+	if apiError.Error() != "Error 404: User not found" {
+		t.Errorf("Expected error message '%s', but got '%s'", "Error 404:User not found", apiError.Error())
+	}
+}
+
+func TestApiError_HttPError(t *testing.T) {
+	apiError := NewApiError(NotFoundErrorType, "User not found")
+	code, message := apiError.HTTPError()
+	if code != http.StatusNotFound {
+		t.Errorf("Expected error code '%d', but got '%d'", http.StatusNotFound, code)
+	}
+	if message != "User not found" {
+		t.Errorf("Expected error message '%s', but got '%s'", "User not found", message)
 	}
 }
