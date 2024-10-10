@@ -50,9 +50,14 @@ func (e *ApiError) Code() int {
 	return e.ErrorCode
 }
 
-// Error return ApiError message.
+// Error implements the error interface for ApiError
 func (e *ApiError) Error() string {
-	return e.Message
+	return fmt.Sprintf("Error %d: %s", e.ErrorCode, e.Message)
+}
+
+// HTTPError generates an HTTP error response
+func (e *ApiError) HTTPError() (int, string) {
+	return e.ErrorCode, e.Message
 }
 
 // InternalError return ApiError message.
